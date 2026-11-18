@@ -1,6 +1,7 @@
 #include "TextProcessor.h"
 
-std::string TextProcessor::replace_words(const std::string& from, const std::string& to) const
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+std::string TextProcessor::replace_words(const std::string& from, const std::string& p_to) const
 {
     if (from.empty())
     {
@@ -19,7 +20,7 @@ std::string TextProcessor::replace_words(const std::string& from, const std::str
             break;
         }
         result.append(text_, pos, found - pos);
-        result += to;
+        result += p_to;
         pos = found + from.size();
     }
     return result;
@@ -34,14 +35,14 @@ std::string TextProcessor::capitalize_words() const
 {
     std::string result = text_;
     bool word_start = true;
-    for (char& c : result)
+    for (char& cha : result)
     {
-        const auto uc = static_cast<unsigned char>(c);
-        if (std::isalpha(uc))
+        const auto ucha = static_cast<unsigned char>(cha);
+        if ((bool)std::isalpha(ucha))
         {
             if (word_start)
             {
-                c = static_cast<char>(std::toupper(uc));
+                cha = static_cast<char>(std::toupper(ucha));
             }
             word_start = false;
         }
@@ -57,21 +58,21 @@ std::string TextProcessor::capitalize_sentences() const
 {
     std::string result = text_;
     bool sentence_start = true;
-    for (char& c : result)
+    for (char& cha : result)
     {
-        const auto uc = static_cast<unsigned char>(c);
-        if (c == '.' || c == '!' || c == '?')
+        const auto ucha = static_cast<unsigned char>(cha);
+        if (cha == '.' || cha == '!' || cha == '?')
         {
             sentence_start = true;
         }
         else if (sentence_start)
         {
-            if (std::isalpha(uc))
+            if ((bool)std::isalpha(ucha))
             {
-                c = static_cast<char>(std::toupper(uc));
+                cha = static_cast<char>(std::toupper(ucha));
                 sentence_start = false;
             }
-            else if (!std::isspace(uc))
+            else if (!(bool)std::isspace(ucha))
             {
                 sentence_start = false;
             }
@@ -85,10 +86,10 @@ std::string TextProcessor::number_sentences() const
     std::ostringstream out;
     std::string current;
     std::size_t num = 1;
-    for (char c : text_)
+    for (char cha : text_)
     {
-        current += c;
-        if (c == '.' || c == '!' || c == '?')
+        current += cha;
+        if (cha == '.' || cha == '!' || cha == '?')
         {
             out << num++ << ". " << trim(current) << '\n';
             current.clear();

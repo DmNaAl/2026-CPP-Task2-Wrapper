@@ -12,22 +12,21 @@
 class Any
 {
 public:
-    Any() : held_(nullptr)
+    Any() = default;
+
+    // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
+    Any(const char* strng) : held_(new Holder<std::string>(strng))
     {}
 
     // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-    Any(const char* s) : held_(new Holder<std::string>(s))
-    {}
-
-    // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-    Any(char* s) : held_(new Holder<std::string>(s))
+    Any(char* strng) : held_(new Holder<std::string>(strng))
     {}
 
     template<typename T, typename = std::enable_if_t<!std::is_base_of_v<Any, decay_t<T>>>>
-    explicit Any(T&& t) : held_(new Holder<decay_t<T>>(std::forward<T>(t)))
+    explicit Any(T&& temp) : held_(new Holder<decay_t<T>>(std::forward<T>(temp)))
     {}
 
-    Any(const Any& othr) : held_(othr.held_ ? othr.held_->clone() : nullptr)
+    Any(const Any& othr) : held_((othr.held_ != nullptr) ? othr.held_->clone() : nullptr)
     {}
     Any(Any&& othr) noexcept : held_(othr.held_)
     {
@@ -72,18 +71,18 @@ public:
 
     [[nodiscard, maybe_unused]] const std::type_info& type_info() const
     {
-        return held_ ? held_->type_info() : typeid(void);
+        return (held_ != nullptr) ? held_->type_info() : typeid(void);
     }
 
-    void print(std::ostream& os) const
+    void print(std::ostream& outs) const
     {
-        if (held_)
+        if (held_ != nullptr)
         {
-            held_->print(os);
+            held_->print(outs);
         }
         else
         {
-            os << "<empty>";
+            outs << "<empty>";
         }
     }
 
@@ -121,7 +120,7 @@ private:
     struct Holder : Base
     {
         template<typename U, typename = std::enable_if_t<!std::is_base_of_v<Any, decay_t<U>>>>
-        explicit Holder(U&& u) : t_(std::forward<U>(u))
+        explicit Holder(U&& utype) : t_(std::forward<U>(utype))
         {}
         [[nodiscard]] const std::type_info& type_info() const override
         {
@@ -132,26 +131,26 @@ private:
             return new Holder<T>(t_);
         }
 
-        void print(std::ostream& os) const override
+        void print(std::ostream& outs) const override
         {
             if constexpr (is_streamable_v<T>)
             {
-                os << t_;
+                outs << t_;
             }
             else
             {
-                os << "<any>";
+                outs << "<any>";
             }
         }
 
         T t_;
     };
 
-    Base* held_;
+    Base* held_ = nullptr;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Any& a)
+inline std::ostream& operator<<(std::ostream& outs, const Any& any)
 {
-    a.print(os);
-    return os;
+    any.print(outs);
+    return outs;
 }

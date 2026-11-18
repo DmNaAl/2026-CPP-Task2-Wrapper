@@ -47,13 +47,13 @@ struct decay_impl
 };
 
 template <class T, std::size_t N>
-struct decay_impl<T[N]>
+struct decay_impl<T[N]>// NOLINT(modernize-avoid-c-arrays)
 {
     using type = T*;
 };
 
 template <class T>
-struct decay_impl<T[]>
+struct decay_impl<T[]>// NOLINT(modernize-avoid-c-arrays)
 {
     using type = T*;
 };

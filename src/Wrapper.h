@@ -19,17 +19,17 @@ class Wrapper
         std::map<std::string, Any> defaults;
         std::array<std::string, sizeof...(Args)> names;
 
-        Model(Subject* s, Method m, std::initializer_list<std::pair<std::string, Any>> dflt) : subject(s), method(m)
+        Model(Subject* sub, Method met, std::initializer_list<std::pair<std::string, Any>> dflt) : subject(sub), method(met)
         {
             if (dflt.size() != sizeof...(Args))
             {
                 throw std::invalid_argument("Wrapper: argument count mismatch with default dictionary size");
             }
-            std::size_t i = 0;
-            for (const auto& p : dflt)
+            std::size_t iter = 0;
+            for (const auto& pair : dflt)
             {
-                names[i++] = p.first;
-                defaults[p.first] = p.second;
+                names[iter++] = pair.first;
+                defaults[pair.first] = pair.second;
             }
         }
 
@@ -45,16 +45,16 @@ class Wrapper
 
     private:
         template<std::size_t... Is>
-        Any invoke(const std::map<std::string, Any>& a, std::index_sequence<Is...>) const
+        Any invoke(const std::map<std::string, Any>& amap, std::index_sequence<Is...> /*j*/) const
         {
             if constexpr (std::is_void_v<Ret>)
             {
-                (subject->*method)(a.at(names[Is]).template get<Args>()...);
+                (subject->*method)(amap.at(names[Is]).template get<Args>()...);
                 return Any{};
             }
             else
             {
-                return Any((subject->*method)(a.at(names[Is]).template get<Args>()...));
+                return Any((subject->*method)(amap.at(names[Is]).template get<Args>()...));
             }
         }
     };
