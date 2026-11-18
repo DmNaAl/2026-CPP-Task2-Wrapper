@@ -5,25 +5,6 @@
 
 class Wrapper
 {
-public:
-    template<typename Subject, typename Ret, typename... Args>
-    Wrapper(Subject* subject, Ret (Subject::*method)(Args...), std::initializer_list<std::pair<std::string, Any>> defaults)
-    {
-        impl_ = std::make_unique<Model<Subject, Ret (Subject::*)(Args...), Ret, Args...>>(subject, method, defaults);
-    }
-
-    template<typename Subject, typename Ret, typename... Args>
-    Wrapper(Subject* subject, Ret (Subject::*method)(Args...) const, std::initializer_list<std::pair<std::string, Any>> defaults)
-    {
-        impl_ = std::make_unique<Model<Subject, Ret (Subject::*)(Args...) const, Ret, Args...>>(subject, method, defaults);
-    }
-
-    [[nodiscard]] Any execute(const std::map<std::string, Any> &overrides = {}) const
-    {
-        return impl_->execute(overrides);
-    }
-
-private:
     struct Concept
     {
         virtual ~Concept() = default;
@@ -79,4 +60,18 @@ private:
     };
 
     std::unique_ptr<Concept> impl_;
+
+public:
+    template<typename Subject, typename Ret, typename... Args>
+    Wrapper(Subject* subject, Ret (Subject::*method)(Args...), std::initializer_list<std::pair<std::string, Any>> defaults) : impl_(std::make_unique<Model<Subject, Ret (Subject::*)(Args...), Ret, Args...>>(subject, method, defaults))
+    {}
+
+    template<typename Subject, typename Ret, typename... Args>
+    Wrapper(Subject* subject, Ret (Subject::*method)(Args...) const, std::initializer_list<std::pair<std::string, Any>> defaults) : impl_(std::make_unique<Model<Subject, Ret (Subject::*)(Args...) const, Ret, Args...>>(subject, method, defaults))
+    {}
+
+    [[nodiscard]] Any execute(const std::map<std::string, Any> &overrides = {}) const
+    {
+        return impl_->execute(overrides);
+    }
 };
